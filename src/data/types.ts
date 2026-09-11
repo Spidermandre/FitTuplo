@@ -45,7 +45,6 @@ export interface Block {
   type: BlockType;
   restBetweenSetsSec?: number;
   restAfterRoundSec?: number;
-  transitionSec?: number;
   exercises: Exercise[];
 }
 

@@ -183,20 +183,19 @@ describe('regole di progressione', () => {
   });
 });
 
-describe('sequenza del timer nelle superserie', () => {
+describe('sequenza del timer', () => {
   const superset = SESSION_A.blocks.find((b) => b.id === 'a-ss1')!;
 
-  it('tra il primo e il secondo esercizio mostra la transizione di 15"', () => {
+  it('tra il primo e il secondo esercizio della superserie non parte alcun timer', () => {
     const step = timerAfterSet({
       blockType: 'superset',
       exerciseIndexInBlock: 0,
       exercisesInBlock: 2,
       isLastSetOfBlock: false,
-      transitionSec: superset.transitionSec,
       restAfterRoundSec: superset.restAfterRoundSec,
     });
-    expect(step.kind).toBe('transition');
-    expect(step.seconds).toBe(15);
+    expect(step.kind).toBe('none');
+    expect(step.seconds).toBe(0);
   });
 
   it('dopo il secondo esercizio parte il recupero completo', () => {
@@ -205,7 +204,6 @@ describe('sequenza del timer nelle superserie', () => {
       exerciseIndexInBlock: 1,
       exercisesInBlock: 2,
       isLastSetOfBlock: false,
-      transitionSec: superset.transitionSec,
       restAfterRoundSec: superset.restAfterRoundSec,
     });
     expect(step.kind).toBe('rest');

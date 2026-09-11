@@ -12,7 +12,7 @@ import {
 } from 'recharts';
 import { useStore } from '../lib/store';
 import { newId } from '../lib/db';
-import { EXERCISES, getExercise } from '../data/exercises';
+import { getExercise } from '../data/exercises';
 import { SESSIONS } from '../data/program';
 import {
   MUSCLE_GROUPS,
@@ -332,7 +332,7 @@ export default function Progress() {
       {completed.length === 0 && (
         <EmptyState
           title="Ancora nessuna sessione"
-          hint={`La libreria contiene ${EXERCISES.length} esercizi: completa la Sessione A per popolare la dashboard.`}
+          hint="Completa un allenamento per popolare la dashboard."
         />
       )}
     </div>

@@ -40,14 +40,9 @@ export default function SettingsPage() {
         </p>
       </header>
 
-      <div className="grid grid-cols-2 gap-2">
-        <Link className="btn-ghost" to="/consigli">
-          💡 Consigli
-        </Link>
-        <Link className="btn-ghost" to="/libreria">
-          📚 Esercizi
-        </Link>
-      </div>
+      <Link className="btn-ghost w-full" to="/consigli">
+        💡 Consigli
+      </Link>
 
       <SectionTitle>Ciclo</SectionTitle>
       <Card>

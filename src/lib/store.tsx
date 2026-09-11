@@ -17,7 +17,6 @@ interface Store {
   workouts: WorkoutLog[];
   metrics: BodyMetric[];
   completed: WorkoutLog[];
-  inProgress?: WorkoutLog;
   program: ProgramState;
   updateSettings: (patch: Partial<Settings>) => Promise<void>;
   putWorkout: (log: WorkoutLog) => Promise<void>;
@@ -53,7 +52,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
 
   const value = useMemo<Store>(() => {
     const completed = workouts.filter((w) => w.status === 'completed');
-    const inProgress = workouts.find((w) => w.status === 'inProgress');
     const completedInCycle = completed.filter((w) => w.cycle === settings.cycle).length;
     return {
       ready,
@@ -61,7 +59,6 @@ export function StoreProvider({ children }: { children: ReactNode }) {
       workouts,
       metrics,
       completed,
-      inProgress,
       program: computeProgramState(completedInCycle, settings),
       updateSettings: async (patch) => {
         setSettings(await saveSettings(patch));

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useStore } from '../lib/store';
 import { newId } from '../lib/db';
 import { SESSIONS } from '../data/program';
@@ -67,10 +67,12 @@ const rangeLabel = (e: Exercise) =>
   `${e.min}${e.max !== e.min ? `–${e.max}` : ''}${e.measure.startsWith('seconds') ? '″' : ''}`;
 
 export default function Workout() {
-  const { program, settings, completed, inProgress, putWorkout, deleteWorkout } = useStore();
+  const { program, settings, completed, workouts, putWorkout, deleteWorkout } = useStore();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
 
-  const sessionId = inProgress?.sessionId ?? program.nextSessionId;
+  const requested = params.get('sessione');
+  const sessionId: 'A' | 'B' = requested === 'B' ? 'B' : requested === 'A' ? 'A' : program.nextSessionId;
   const session = SESSIONS[sessionId];
   const phase = program.phase;
   const setsOf = useCallback((e: Exercise) => setsForPhase(e.sets, phase), [phase]);
@@ -86,6 +88,7 @@ export default function Workout() {
   const [rir, setRir] = useState<number | undefined>(undefined);
   const [kneePain, setKneePain] = useState(0);
   const [notes, setNotes] = useState('');
+  const [confirmingCancel, setConfirmingCancel] = useState(false);
   const wakeRef = useRef<WakeLockSentinel | null>(null);
 
   const steps = useMemo(() => {
@@ -102,17 +105,16 @@ export default function Workout() {
     beep(settings.sound);
   });
 
-  /* ------------------------------------------------------------ avvio / ripresa */
+  /* ------------------------------------------------------------------ avvio */
+  // Ogni ingresso in allenamento ricomincia la sessione da capo: le sessioni
+  // lasciate a metà vengono scartate, così non restano appese nello storico.
+  const startedRef = useRef(false);
   useEffect(() => {
-    if (log) return;
-    if (inProgress) {
-      setLog(inProgress);
-      setCursor(inProgress.cursor ?? 0);
-      setChecklist(inProgress.checklist ?? []);
-      setPhaseView((inProgress.cursor ?? 0) > 0 ? 'work' : 'warmup');
-      setNotes(inProgress.notes ?? '');
-      return;
-    }
+    if (startedRef.current) return;
+    startedRef.current = true;
+    stop();
+    const stale = workouts.filter((w) => w.status === 'inProgress');
+    void Promise.all(stale.map((w) => deleteWorkout(w.id)));
     const fresh: WorkoutLog = {
       id: newId(),
       startedAt: new Date().toISOString(),
@@ -127,7 +129,8 @@ export default function Workout() {
     };
     setLog(fresh);
     void putWorkout(fresh);
-  }, [inProgress, log, phase.id, program.cycle, program.week, putWorkout, sessionId]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   /* ------------------------------------------------------------------ wake lock */
   useEffect(() => {
@@ -263,10 +266,9 @@ export default function Workout() {
       isLastSetOfBlock: step.isLastSetOfBlock,
       restBetweenSetsSec: step.block.restBetweenSetsSec,
       restAfterRoundSec: step.block.restAfterRoundSec,
-      transitionSec: step.block.transitionSec,
     });
     if (next.kind !== 'none') {
-      start(Math.round(next.seconds * settings.restScale), next.label, next.kind);
+      start(Math.round(next.seconds * settings.restScale), next.label);
     }
 
     const nextCursor = Math.min(cursor + 1, steps.length);
@@ -293,12 +295,9 @@ export default function Workout() {
   };
 
   const abandon = async () => {
-    if (!log) return;
-    if (!window.confirm('Vuoi uscire e cancellare questa sessione? I dati non verranno salvati.'))
-      return;
     stop();
-    await deleteWorkout(log.id);
-    navigate('/');
+    if (log) await deleteWorkout(log.id);
+    navigate('/', { replace: true });
   };
 
   if (!log) return null;
@@ -310,7 +309,7 @@ export default function Workout() {
   const Header = (
     <header className="sticky top-0 z-30 -mx-4 mb-3 border-b border-white/40 bg-brand-500/85 px-4 pb-3 pt-safe backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
-        <button className="btn-chip" onClick={() => navigate('/')} aria-label="Torna alla home">
+        <button className="btn-chip" onClick={() => navigate('/')} aria-label="Esci dall’allenamento e torna alla home">
           ← Esci
         </button>
         <p className="text-sm font-black">
@@ -501,16 +500,9 @@ export default function Workout() {
 
       {/* ------------------------------------------------------------ timer attivo */}
       {timer && (
-        <Card
-          className={`solid !border-white/15 ${timer.kind === 'transition' ? '!bg-orange-950 !text-white' : '!bg-ink !text-white'}`}
-        >
+        <Card className="solid !border-white/15 !bg-ink !text-white">
           <p className="text-sm font-black uppercase tracking-wider text-brand-400">
             {timer.label}
-            {timer.kind === 'transition' && (
-              <span className="ml-2 font-semibold normal-case tracking-normal text-white/70">
-                prepara la stazione successiva
-              </span>
-            )}
           </p>
           <p className="mt-1 text-center text-7xl font-black tabular-nums leading-none">
             {formatClock(timer.remaining)}
@@ -742,9 +734,29 @@ export default function Workout() {
       <button className="btn-ghost w-full" onClick={() => setPhaseView('cooldown')}>
         Vai al defaticamento
       </button>
-      <button className="btn-ghost w-full !text-red-900" onClick={abandon}>
-        Annulla la sessione
-      </button>
+      {confirmingCancel ? (
+        <Card className="solid !bg-red-50">
+          <p className="font-bold">Annullare la sessione?</p>
+          <p className="mt-1 text-sm text-ink/75">
+            Le serie registrate finora vengono eliminate e torni alla home.
+          </p>
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button className="btn-ghost" onClick={() => setConfirmingCancel(false)}>
+              No, continua
+            </button>
+            <button className="btn bg-red-900 text-white" onClick={abandon}>
+              Sì, annulla
+            </button>
+          </div>
+        </Card>
+      ) : (
+        <button
+          className="btn-ghost w-full !text-red-900"
+          onClick={() => setConfirmingCancel(true)}
+        >
+          Annulla la sessione
+        </button>
+      )}
     </div>
   );
 }

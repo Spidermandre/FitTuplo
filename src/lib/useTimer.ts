@@ -6,7 +6,6 @@ interface Persisted {
   endsAt: number;
   totalSec: number;
   label: string;
-  kind: 'rest' | 'transition';
 }
 
 export interface TimerState extends Persisted {
@@ -70,10 +69,10 @@ export function useRestTimer(onDone?: () => void) {
   }, [tick]);
 
   const start = useCallback(
-    (seconds: number, label: string, kind: 'rest' | 'transition' = 'rest') => {
+    (seconds: number, label: string) => {
       if (seconds <= 0) return;
       firedRef.current = false;
-      const p: Persisted = { endsAt: Date.now() + seconds * 1000, totalSec: seconds, label, kind };
+      const p: Persisted = { endsAt: Date.now() + seconds * 1000, totalSec: seconds, label };
       write(p);
       setState({ ...p, remaining: seconds });
     },

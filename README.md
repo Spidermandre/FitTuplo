@@ -11,8 +11,10 @@ dati restano sul telefono (IndexedDB).
 
 ## Cosa fa
 
-- **Oggi** — prossima sessione (A o B), ciclo, settimana e fase correnti con RIR e tempo di
-  esecuzione, avanzamento del ciclo e aderenza, anteprima dei blocchi.
+- **Oggi** — scegli tu se fare la **Sessione A o la Sessione B** (quella suggerita
+  dall'alternanza è marcata “consigliata”, ma non è vincolante); ciclo, settimana e fase correnti
+  con RIR e tempo di esecuzione, avanzamento del ciclo e aderenza, anteprima dei blocchi della
+  sessione scelta.
 - **Modalità allenamento** — una schermata per serie, con:
   - spiegazione breve dell'esercizio sempre visibile, tecnica ed errori espandibili, nota ginocchia
     evidenziata;
@@ -21,17 +23,21 @@ dati restano sul telefono (IndexedDB).
     per i manubri, 2,5 kg per bilancieri, cavi e macchine);
   - ripetizioni (o secondi) e RIR facoltativo;
   - **timer di recupero che parte al click su “Completato”**, con `−15″` / `+15″` e **Salta**;
-  - nelle superserie: transizione di 15″ tra i due esercizi e recupero completo solo dopo il secondo;
+  - nelle superserie si passa subito al secondo esercizio, senza timer: il recupero parte solo
+    dopo il secondo;
   - badge **DROP SET** sull'ultima serie degli esercizi ISO in fase di intensificazione;
   - pulsante **Sostituisci** per passare a un'alternativa, registrata come tale nello storico;
   - riscaldamento e defaticamento come checklist;
+  - **Annulla la sessione** con conferma in-app: elimina le serie registrate e riporta alla home;
   - Screen Wake Lock attivo e salvataggio a ogni input.
+
+  Ogni ingresso in allenamento **ricomincia la sessione da capo**: se esci a metà, la sessione
+  interrotta viene scartata e non resta appesa nello storico.
 - **Progressi** — dashboard con carico massimo e 1RM stimato (Epley) per esercizio, serie
   settimanali per gruppo muscolare, volume per sessione, peso corporeo con media mobile a 3
   misurazioni e circonferenza vita.
-- **Storico** — elenco delle sessioni, dettaglio serie per serie, modifica ed eliminazione.
-- **Esercizi** — una scheda per ciascuno dei 47 esercizi (alternative comprese) con muscoli,
-  esecuzione, errori, nota ginocchia e ricerca su YouTube.
+- **Storico** — elenco delle sessioni completate, dettaglio serie per serie, modifica ed
+  eliminazione.
 - **Consigli** — i principi della scheda, alimentazione, sonno, postura, ginocchia.
 - **Impostazioni** — data di inizio, nuovo ciclo o reset, incrementi di carico, durata dei recuperi,
   suono e vibrazione, export/import del backup JSON, cancellazione dei dati.
@@ -39,8 +45,8 @@ dati restano sul telefono (IndexedDB).
 ### Il timer continua in background
 
 Il timer non è un contatore in memoria: salva il **timestamp di fine** in `localStorage` e ricalcola
-il tempo residuo a ogni tick e a ogni ritorno in primo piano. Se passi a un'altra app, blocchi lo
-schermo o ricarichi la pagina, al rientro il conto alla rovescia è nel punto giusto.
+il tempo residuo a ogni tick e a ogni ritorno in primo piano. Se passi a un'altra app o blocchi lo
+schermo, al rientro il conto alla rovescia è nel punto giusto.
 
 ---
 
@@ -133,7 +139,7 @@ src/
     store.tsx       stato dell'app
     useTimer.ts     timer basato su timestamp, suono e vibrazione
   components/       componenti condivisi (vetro liquido, stepper, barra di avanzamento)
-  pages/            Home, Workout, Progress, History, Library, Tips, Settings, Onboarding
+  pages/            Home, Workout, Progress, History, Tips, Settings, Onboarding
   styles/index.css  design system "liquid glass"
 ```
 

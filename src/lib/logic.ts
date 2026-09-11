@@ -226,13 +226,13 @@ export function suggestForExercise(
 /* ------------------------------------------------------------------- timer logic */
 
 export type TimerStep =
-  | { kind: 'transition'; seconds: number; label: string }
   | { kind: 'rest'; seconds: number; label: string }
   | { kind: 'none'; seconds: 0; label: string };
 
 /**
- * Sequenza del timer: nelle superserie si passa subito al secondo esercizio
- * (transizione di 15") e il recupero completo parte solo dopo il secondo.
+ * Sequenza del timer: un solo recupero, al termine dell'esercizio.
+ * Nelle superserie si passa subito al secondo esercizio senza timer, e il
+ * recupero parte solo dopo il secondo.
  */
 export function timerAfterSet(params: {
   blockType: 'warmup' | 'main' | 'superset' | 'core' | 'cooldown';
@@ -241,7 +241,6 @@ export function timerAfterSet(params: {
   isLastSetOfBlock: boolean;
   restBetweenSetsSec?: number;
   restAfterRoundSec?: number;
-  transitionSec?: number;
 }): TimerStep {
   const {
     blockType,
@@ -250,20 +249,13 @@ export function timerAfterSet(params: {
     isLastSetOfBlock,
     restBetweenSetsSec,
     restAfterRoundSec,
-    transitionSec,
   } = params;
 
   if (isLastSetOfBlock) return { kind: 'none', seconds: 0, label: 'Blocco completato' };
 
   if (blockType === 'superset' || blockType === 'core') {
     const isLastOfPair = exerciseIndexInBlock === exercisesInBlock - 1;
-    if (!isLastOfPair) {
-      return {
-        kind: 'transition',
-        seconds: transitionSec ?? 15,
-        label: 'Transizione',
-      };
-    }
+    if (!isLastOfPair) return { kind: 'none', seconds: 0, label: 'Passa al secondo esercizio' };
     return { kind: 'rest', seconds: restAfterRoundSec ?? 60, label: 'Recupero' };
   }
 

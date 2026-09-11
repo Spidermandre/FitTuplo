@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../lib/store';
 import { SESSIONS, WEEKS_PER_CYCLE } from '../data/program';
@@ -7,14 +8,21 @@ import { Card, Logo, Pill, ProgressBar, SectionTitle } from '../components/ui';
 const fmtDate = (iso: string) =>
   new Date(iso).toLocaleDateString('it-IT', { day: '2-digit', month: 'short' });
 
+/** Sintesi di una sessione, per scegliere a colpo d'occhio. */
+const FOCUS: Record<'A' | 'B', string> = {
+  A: 'Panca piana · lat machine · alzate · core',
+  B: 'Trazioni · rematore · shoulder press · plank',
+};
+
 export default function Home() {
-  const { program, completed, inProgress, settings, updateSettings } = useStore();
+  const { program, completed, settings, updateSettings } = useStore();
   const navigate = useNavigate();
-  const session = SESSIONS[program.nextSessionId];
+  // La sessione consigliata dall'alternanza è solo il default: scegli tu.
+  const [selected, setSelected] = useState<'A' | 'B'>(program.nextSessionId);
+  const session = SESSIONS[selected];
   const completedInCycle = completed.filter((w) => w.cycle === settings.cycle).length;
   const cycleDone = isCycleComplete(completedInCycle);
 
-  // Aderenza: sessioni svolte rispetto a quelle previste dalla data di inizio.
   const weeksElapsed = Math.max(
     1,
     Math.ceil(
@@ -49,23 +57,56 @@ export default function Home() {
           </button>
         </Card>
       ) : (
-        <Card className="!p-0">
-          <div className="relative p-5">
-            <div className="flex items-start justify-between gap-3">
-              <div>
-                <p className="section-title">Prossimo allenamento</p>
-                <h1 className="mt-1 text-4xl font-black leading-none">{session.name}</h1>
-                <p className="mt-2 text-sm font-semibold text-ink/70">
-                  Ciclo {program.cycle} · Settimana {program.week} di {WEEKS_PER_CYCLE} ·{' '}
-                  {session.estimatedMinutes}′ circa
-                </p>
-              </div>
-              <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-3xl bg-ink text-3xl font-black text-brand-400 shadow-lift">
-                {session.id}
-              </span>
+        <>
+          <Card>
+            <p className="section-title">Scegli l’allenamento</p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {(['A', 'B'] as const).map((id) => {
+                const on = selected === id;
+                const suggested = program.nextSessionId === id;
+                return (
+                  <button
+                    key={id}
+                    onClick={() => setSelected(id)}
+                    aria-pressed={on}
+                    className={`rounded-glass border p-4 text-left transition active:scale-[0.98] ${
+                      on
+                        ? 'border-ink bg-ink text-white shadow-lift'
+                        : 'border-ink/12 bg-white/60 text-ink'
+                    }`}
+                  >
+                    <span
+                      className={`flex h-12 w-12 items-center justify-center rounded-2xl text-2xl font-black ${
+                        on ? 'bg-brand-500 text-ink' : 'bg-ink text-brand-400'
+                      }`}
+                    >
+                      {id}
+                    </span>
+                    <span className="mt-2 block text-base font-black">Sessione {id}</span>
+                    <span
+                      className={`mt-0.5 block text-xs leading-snug ${on ? 'text-white/70' : 'text-ink/60'}`}
+                    >
+                      {FOCUS[id]}
+                    </span>
+                    {suggested && (
+                      <span
+                        className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${
+                          on ? 'bg-brand-500 text-ink' : 'bg-ink/10 text-ink'
+                        }`}
+                      >
+                        Consigliata
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
-            <div className="mt-4 flex flex-wrap gap-2">
+            <p className="mt-4 text-sm font-semibold text-ink/70">
+              Ciclo {program.cycle} · Settimana {program.week} di {WEEKS_PER_CYCLE} ·{' '}
+              {session.estimatedMinutes}′ circa
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
               <Pill tone="ink">Fase: {program.phase.name}</Pill>
               <Pill>RIR multi {program.phase.rirMulti}</Pill>
               <Pill>RIR iso {program.phase.rirIso}</Pill>
@@ -79,18 +120,12 @@ export default function Home() {
 
             <button
               className="btn-primary mt-5 w-full text-lg"
-              onClick={() => navigate('/allenamento')}
+              onClick={() => navigate(`/allenamento?sessione=${selected}`)}
             >
-              {inProgress ? '▶︎ Riprendi allenamento' : '▶︎ Inizia allenamento'}
+              ▶︎ Inizia allenamento {selected}
             </button>
-            {inProgress && (
-              <p className="mt-2 text-center text-xs font-semibold text-ink/60">
-                Sessione {inProgress.sessionId} in corso dal {fmtDate(inProgress.startedAt)} — riprendi
-                dal punto esatto.
-              </p>
-            )}
-          </div>
-        </Card>
+          </Card>
+        </>
       )}
 
       <Card>
@@ -110,7 +145,7 @@ export default function Home() {
       </Card>
 
       <section>
-        <SectionTitle>Anteprima sessione</SectionTitle>
+        <SectionTitle>Anteprima Sessione {selected}</SectionTitle>
         <Card as="section" className="!p-0">
           <ul className="divide-y divide-ink/8">
             {session.blocks

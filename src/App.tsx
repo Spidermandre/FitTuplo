@@ -4,7 +4,6 @@ import Home from './pages/Home';
 import Workout from './pages/Workout';
 import Progress from './pages/Progress';
 import History from './pages/History';
-import Library from './pages/Library';
 import Tips from './pages/Tips';
 import SettingsPage from './pages/Settings';
 import Onboarding from './pages/Onboarding';
@@ -14,7 +13,6 @@ const TABS = [
   { to: '/', label: 'Oggi', icon: '🏠' },
   { to: '/progressi', label: 'Progressi', icon: '📈' },
   { to: '/storico', label: 'Storico', icon: '🗂' },
-  { to: '/libreria', label: 'Esercizi', icon: '📚' },
   { to: '/impostazioni', label: 'Altro', icon: '⚙️' },
 ];
 
@@ -43,7 +41,6 @@ export default function App() {
           <Route path="/allenamento" element={<Workout />} />
           <Route path="/progressi" element={<Progress />} />
           <Route path="/storico" element={<History />} />
-          <Route path="/libreria" element={<Library />} />
           <Route path="/consigli" element={<Tips />} />
           <Route path="/impostazioni" element={<SettingsPage />} />
           <Route path="*" element={<Navigate to="/" replace />} />

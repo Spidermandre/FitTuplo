@@ -108,7 +108,7 @@ function Detail({ log, onClose }: { log: WorkoutLog; onClose: () => void }) {
 }
 
 export default function History() {
-  const { workouts } = useStore();
+  const { completed: workouts } = useStore();
   const [openId, setOpenId] = useState<string | null>(null);
   const open = workouts.find((w) => w.id === openId);
 
@@ -144,7 +144,6 @@ export default function History() {
                       <span className="block text-xs text-ink-mute">
                         Sett. {w.week} · {w.sets.filter((s) => s.done).length} serie ·{' '}
                         {Math.round(sessionVolume(w)).toLocaleString('it-IT')} kg
-                        {w.status === 'inProgress' ? ' · in corso' : ''}
                       </span>
                     </span>
                     <span aria-hidden className="text-ink/40">
