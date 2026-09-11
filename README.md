@@ -81,6 +81,12 @@ npm run lint     # ESLint
 npm run format   # Prettier
 ```
 
+Le icone sono già versionate in `public/`. Per rigenerarle dopo una modifica del logo:
+
+```bash
+npm i -D sharp && node scripts/build-icons.mjs
+```
+
 ## Installazione sullo smartphone
 
 - **Android (Chrome):** apri il sito → menu ⋮ → *Installa app* / *Aggiungi a schermata Home*.
@@ -99,15 +105,16 @@ su [app.netlify.com/drop](https://app.netlify.com/drop).
 **Vercel** — importa il repository: Vite viene riconosciuto da solo (build `npm run build`, output
 `dist`).
 
-**GitHub Pages** — pubblica `dist` sul branch `gh-pages`:
+**GitHub Pages (già configurato)** — il workflow `.github/workflows/deploy.yml` esegue lint, test e
+build a ogni push e pubblica `dist`. Serve **una sola volta** accendere Pages, perché il token di
+GitHub Actions non ha il permesso di creare il sito da solo:
 
-```bash
-npm run build
-npx gh-pages -d dist
-```
+> *Settings → Pages → Build and deployment → Source: **GitHub Actions*** → salva.
 
-Poi *Settings → Pages → Branch: `gh-pages`*. Il service worker richiede HTTPS: tutte e tre le
-piattaforme lo forniscono.
+Poi *Actions → CI e deploy su GitHub Pages → Run workflow* (o basta il push successivo). L'app sarà
+su `https://spidermandre.github.io/FitTuplo/`.
+
+Il service worker richiede HTTPS: tutte e tre le piattaforme lo forniscono.
 
 ---
 

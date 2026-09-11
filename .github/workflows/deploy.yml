@@ -1,4 +1,4 @@
-name: Deploy su GitHub Pages
+name: CI e deploy su GitHub Pages
 
 on:
   push:
@@ -15,27 +15,28 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  # Controlli di qualità: restano verdi anche se Pages non è ancora attivo.
   build:
+    name: Lint, test e build
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
       - run: npm ci
       - run: npm run lint
       - run: npm test
       - run: npm run build
-      - uses: actions/configure-pages@v5
-        with:
-          # Abilita GitHub Pages al primo deploy, senza passare dalle impostazioni.
-          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
 
+  # Richiede Pages attivo una volta sola:
+  # Settings → Pages → Source: "GitHub Actions".
   deploy:
+    name: Deploy su Pages
     needs: build
     runs-on: ubuntu-latest
     environment:
