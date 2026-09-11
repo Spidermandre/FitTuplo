@@ -1,0 +1,170 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --safe-top: env(safe-area-inset-top, 0px);
+    --safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  html,
+  body,
+  #root {
+    height: 100%;
+  }
+
+  body {
+    @apply bg-brand-500 text-ink antialiased;
+    margin: 0;
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+    background-image:
+      radial-gradient(120% 80% at 10% -10%, #fff6a8 0%, rgba(255, 246, 168, 0) 55%),
+      radial-gradient(110% 70% at 95% 0%, #ffe98a 0%, rgba(255, 233, 138, 0) 50%),
+      radial-gradient(130% 90% at 50% 115%, #f2c200 0%, rgba(242, 194, 0, 0) 60%);
+    background-attachment: fixed;
+  }
+
+  button,
+  input,
+  select,
+  textarea {
+    font: inherit;
+    color: inherit;
+  }
+
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  :focus-visible {
+    outline: 3px solid #0b0b0c;
+    outline-offset: 2px;
+    border-radius: 12px;
+  }
+}
+
+@layer components {
+  /* ------------------------------------------------------ liquid glass, stile Apple */
+  .glass {
+    @apply relative rounded-glass border border-white/60 shadow-glass;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 255, 255, 0.72) 0%,
+      rgba(255, 255, 255, 0.42) 46%,
+      rgba(255, 255, 255, 0.58) 100%
+    );
+    backdrop-filter: blur(22px) saturate(180%);
+    -webkit-backdrop-filter: blur(22px) saturate(180%);
+  }
+
+  .glass-dark {
+    @apply relative rounded-glass border border-white/12 text-white shadow-lift;
+    background: linear-gradient(
+      135deg,
+      rgba(20, 20, 22, 0.92) 0%,
+      rgba(11, 11, 12, 0.82) 50%,
+      rgba(30, 30, 34, 0.9) 100%
+    );
+    backdrop-filter: blur(22px) saturate(160%);
+    -webkit-backdrop-filter: blur(22px) saturate(160%);
+  }
+
+  /* Riflesso superiore tipico del vetro liquido */
+  .glass-sheen::after {
+    content: '';
+    @apply pointer-events-none absolute inset-x-0 top-0 z-0 h-1/2 rounded-t-glass;
+    background: linear-gradient(to bottom, rgba(255, 255, 255, 0.5), rgba(255, 255, 255, 0));
+  }
+
+  .glass-tile {
+    @apply glass glass-sheen overflow-hidden p-5;
+  }
+
+  /* Il riflesso resta sul vetro, mai sopra il contenuto. */
+  .glass-tile > *,
+  .glass > * {
+    @apply relative z-[1];
+  }
+
+  /* ------------------------------------------------------------------- controlli */
+  .btn {
+    @apply inline-flex min-h-[48px] select-none items-center justify-center gap-2 rounded-2xl px-5
+      text-base font-semibold transition active:scale-[0.97] disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply btn bg-ink text-brand-400 shadow-lift;
+  }
+
+  .btn-ghost {
+    @apply btn border border-ink/15 bg-white/55 text-ink backdrop-blur-md;
+  }
+
+  .btn-chip {
+    @apply inline-flex min-h-[44px] items-center justify-center rounded-xl border border-ink/12
+      bg-white/60 px-3 text-sm font-semibold backdrop-blur-md transition active:scale-95;
+  }
+
+  .step-btn {
+    @apply flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl border border-ink/15
+      bg-white/70 text-2xl font-bold shadow-glass-sm transition active:scale-90;
+  }
+
+  .field {
+    @apply min-h-[48px] w-full rounded-2xl border border-ink/12 bg-white/70 px-4 text-base
+      shadow-glass-sm backdrop-blur-md placeholder:text-ink-mute/60;
+  }
+
+  .label {
+    @apply mb-1 block text-xs font-bold uppercase tracking-wider text-ink-mute;
+  }
+
+  .pill {
+    @apply inline-flex items-center gap-1 rounded-full px-3 py-1 text-xs font-bold uppercase tracking-wide;
+  }
+
+  .section-title {
+    @apply text-[11px] font-black uppercase tracking-[0.14em] text-ink/70;
+  }
+}
+
+@layer utilities {
+  /* Tinta piena su una superficie di vetro: toglie gradiente e riflesso,
+     così i fondi scuri restano davvero scuri. */
+  .solid {
+    background-image: none !important;
+  }
+  .solid::after {
+    display: none !important;
+  }
+
+  .pb-safe {
+    padding-bottom: calc(var(--safe-bottom) + 1rem);
+  }
+  .pt-safe {
+    padding-top: calc(var(--safe-top) + 0.75rem);
+  }
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+  .no-scrollbar {
+    scrollbar-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
