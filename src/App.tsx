@@ -6,7 +6,6 @@ import Progress from './pages/Progress';
 import History from './pages/History';
 import Tips from './pages/Tips';
 import SettingsPage from './pages/Settings';
-import Onboarding from './pages/Onboarding';
 import { Logo } from './components/ui';
 
 const TABS = [
@@ -17,7 +16,7 @@ const TABS = [
 ];
 
 export default function App() {
-  const { ready, settings } = useStore();
+  const { ready } = useStore();
   const { pathname } = useLocation();
   const inWorkout = pathname.startsWith('/allenamento');
 
@@ -30,8 +29,6 @@ export default function App() {
       </div>
     );
   }
-
-  if (!settings.onboarded) return <Onboarding />;
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-[480px] flex-col">

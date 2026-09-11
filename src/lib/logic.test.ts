@@ -26,7 +26,6 @@ const settings: Settings = {
   restScale: 1,
   sound: true,
   vibration: true,
-  onboarded: true,
 };
 
 const log = (id: string, startedAt: string, sets: SetLog[]): WorkoutLog => ({

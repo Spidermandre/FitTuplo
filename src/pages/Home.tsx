@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useStore } from '../lib/store';
 import { SESSIONS, WEEKS_PER_CYCLE } from '../data/program';
-import { isCycleComplete, setsForPhase } from '../lib/logic';
+import { isCycleComplete } from '../lib/logic';
 import { Card, Logo, Pill, ProgressBar, SectionTitle } from '../components/ui';
 
 const fmtDate = (iso: string) =>
@@ -143,36 +143,6 @@ export default function Home() {
           />
         </div>
       </Card>
-
-      <section>
-        <SectionTitle>Anteprima Sessione {selected}</SectionTitle>
-        <Card as="section" className="!p-0">
-          <ul className="divide-y divide-ink/8">
-            {session.blocks
-              .filter((b) => b.type !== 'warmup' && b.type !== 'cooldown')
-              .map((b) => (
-                <li key={b.id} className="p-4">
-                  <p className="section-title">{b.label}</p>
-                  <ul className="mt-1 space-y-1">
-                    {b.exercises.map((e) => (
-                      <li key={e.id} className="flex items-baseline justify-between gap-3 text-sm">
-                        <span className="font-semibold">
-                          {e.code && <span className="text-ink/50">{e.code} · </span>}
-                          {e.name}
-                        </span>
-                        <span className="shrink-0 font-bold tabular-nums text-ink/70">
-                          {setsForPhase(e.sets, program.phase)} × {e.min}
-                          {e.max !== e.min && `–${e.max}`}
-                          {e.measure.startsWith('seconds') ? '″' : ''}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </li>
-              ))}
-          </ul>
-        </Card>
-      </section>
 
       <section>
         <SectionTitle>Ultime sessioni</SectionTitle>

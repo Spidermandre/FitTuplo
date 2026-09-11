@@ -12,7 +12,6 @@ export const DEFAULT_SETTINGS: Settings = {
   restScale: 1,
   sound: true,
   vibration: true,
-  onboarded: false,
 };
 
 class FitTuploDB extends Dexie {

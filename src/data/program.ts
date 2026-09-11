@@ -1,129 +1,11 @@
-import type { Block, Exercise, Phase, WorkoutSession } from './types';
+import type { Phase, WorkoutSession } from './types';
 import { getExercise } from './exercises';
-
-/** Esercizio di riscaldamento/defaticamento: dosaggio testuale, nessun carico. */
-const mobility = (
-  id: string,
-  name: string,
-  dosage: string,
-  summary: string,
-  opts: Partial<Exercise> = {},
-): Exercise => ({
-  id,
-  code: '',
-  name,
-  kind: 'MOBILITY',
-  muscles: [],
-  sets: 1,
-  min: 0,
-  max: 0,
-  measure: 'seconds',
-  equipment: 'bodyweight',
-  bodyweight: true,
-  dosage,
-  summary,
-  cues: [],
-  mistakes: [],
-  alternatives: [],
-  ...opts,
-});
-
-/** Riscaldamento, uguale per A e B, circa 10 minuti. */
-export const WARMUP: Block = {
-  id: 'warmup',
-  label: 'Riscaldamento',
-  type: 'warmup',
-  exercises: [
-    mobility(
-      'wu-foam-roller',
-      'Estensioni toraciche su foam roller',
-      '10 rip',
-      'Supino, piedi a terra, mani dietro la testa; sposta il roller su 3–4 punti del dorso.',
-    ),
-    mobility(
-      'wu-open-book',
-      'Open book (rotazioni toraciche sul fianco)',
-      '8 per lato',
-      'Sdraiato sul fianco, ginocchia piegate; cuscino o asciugamano tra le ginocchia se danno fastidio.',
-    ),
-    mobility(
-      'wu-band-pull-apart',
-      'Band pull-apart con elastico',
-      '2 × 15',
-      'Braccia tese all’altezza del petto, avvicina le scapole.',
-    ),
-    mobility(
-      'wu-pass-through',
-      'Pass-through con elastico o bastone',
-      '10 rip',
-      'Presa larga, senza inarcare la zona lombare.',
-    ),
-    mobility(
-      'wu-wall-slide',
-      'Wall slide (scivolamenti al muro)',
-      '10 rip',
-      'Schiena e avambracci a contatto con il muro.',
-    ),
-    mobility(
-      'wu-extrarotazioni',
-      'Extrarotazioni della spalla con elastico',
-      '12 per lato',
-      'Gomito attaccato al fianco, asciugamano arrotolato tra gomito e busto.',
-    ),
-    mobility(
-      'wu-serie-avvicinamento',
-      'Serie di avvicinamento sul primo esercizio',
-      '3 serie',
-      '10 rip al 50%, 5 rip al 70%, 3 rip all’85% del carico di lavoro; recupero 60".',
-    ),
-  ],
-};
-
-/** Defaticamento, uguale per A e B, circa 6 minuti. */
-export const COOLDOWN: Block = {
-  id: 'cooldown',
-  label: 'Defaticamento',
-  type: 'cooldown',
-  exercises: [
-    mobility(
-      'cd-stretch-pettorali',
-      'Stretching pettorali allo stipite o al montante del rack',
-      '2 × 30" per lato',
-      'Avambraccio appoggiato, ruota il busto dal lato opposto.',
-    ),
-    mobility(
-      'cd-stretch-dorsali',
-      'Stretching dorsali al rack',
-      '2 × 30" per lato',
-      'In piedi, gambe quasi tese, afferra il montante e porta il bacino indietro e di lato.',
-    ),
-    mobility(
-      'cd-stretch-tricipiti',
-      'Stretching tricipiti sopra la testa',
-      '30" per lato',
-      'Gomito verso il soffitto, spingi delicatamente con l’altra mano.',
-    ),
-    mobility(
-      'cd-stretch-collo',
-      'Stretching laterale del collo',
-      '30" per lato',
-      'Inclina l’orecchio verso la spalla, spalla opposta rilassata verso il basso.',
-    ),
-    mobility(
-      'cd-respirazione',
-      'Respirazione diaframmatica',
-      '2\'',
-      'Supino con i polpacci appoggiati sulla panca (anche e ginocchia a 90°); inspira gonfiando l’addome, espira lentamente.',
-    ),
-  ],
-};
 
 export const SESSION_A: WorkoutSession = {
   id: 'A',
   name: 'Sessione A',
-  estimatedMinutes: 80,
+  estimatedMinutes: 65,
   blocks: [
-    WARMUP,
     {
       id: 'a-main',
       label: 'Principale',
@@ -166,16 +48,14 @@ export const SESSION_A: WorkoutSession = {
       restAfterRoundSec: 45,
       exercises: [getExercise('dead-bug'), getExercise('pallof-press')],
     },
-    COOLDOWN,
   ],
 };
 
 export const SESSION_B: WorkoutSession = {
   id: 'B',
   name: 'Sessione B',
-  estimatedMinutes: 80,
+  estimatedMinutes: 65,
   blocks: [
-    WARMUP,
     {
       id: 'b-main',
       label: 'Principale',
@@ -218,7 +98,6 @@ export const SESSION_B: WorkoutSession = {
       restAfterRoundSec: 45,
       exercises: [getExercise('plank-avambracci'), getExercise('plank-laterale')],
     },
-    COOLDOWN,
   ],
 };
 

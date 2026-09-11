@@ -1,5 +1,5 @@
-export type BlockType = 'warmup' | 'main' | 'superset' | 'core' | 'cooldown';
-export type ExerciseKind = 'MULTI' | 'ISO' | 'CORE' | 'MOBILITY';
+export type BlockType = 'main' | 'superset' | 'core';
+export type ExerciseKind = 'MULTI' | 'ISO' | 'CORE';
 export type Measure = 'reps' | 'repsPerSide' | 'seconds' | 'secondsPerSide';
 export type Equipment =
   | 'barbell'
@@ -33,10 +33,8 @@ export interface Exercise {
   alternatives: string[];
   /** Carico di partenza suggerito la primissima volta (kg). undefined = a corpo libero / da scegliere. */
   startingWeightKg?: number;
-  /** true quando il carico non ha senso (plank, mobilità). */
+  /** true quando il carico non ha senso (plank, corpo libero). */
   bodyweight?: boolean;
-  /** Dosaggio testuale per riscaldamento/defaticamento. */
-  dosage?: string;
 }
 
 export interface Block {
@@ -92,8 +90,6 @@ export interface WorkoutLog {
   week: number;
   phaseId: string;
   sets: SetLog[];
-  /** id degli elementi di riscaldamento/defaticamento spuntati */
-  checklist?: string[];
   /** indice di avanzamento per riprendere dal punto esatto */
   cursor?: number;
   kneePain?: number;
@@ -120,5 +116,4 @@ export interface Settings {
   restScale: number;
   sound: boolean;
   vibration: boolean;
-  onboarded: boolean;
 }

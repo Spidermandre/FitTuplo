@@ -34,9 +34,7 @@ const fmtDay = (iso: string) =>
 const PROGRAM_EXERCISE_IDS = Array.from(
   new Set(
     (['A', 'B'] as const).flatMap((id) =>
-      SESSIONS[id].blocks
-        .filter((b) => b.type !== 'warmup' && b.type !== 'cooldown')
-        .flatMap((b) => b.exercises.map((e) => e.id)),
+      SESSIONS[id].blocks.flatMap((b) => b.exercises.map((e) => e.id)),
     ),
   ),
 );

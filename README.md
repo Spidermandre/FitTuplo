@@ -11,11 +11,13 @@ dati restano sul telefono (IndexedDB).
 
 ## Cosa fa
 
-- **Oggi** — scegli tu se fare la **Sessione A o la Sessione B** (quella suggerita
-  dall'alternanza è marcata “consigliata”, ma non è vincolante); ciclo, settimana e fase correnti
-  con RIR e tempo di esecuzione, avanzamento del ciclo e aderenza, anteprima dei blocchi della
-  sessione scelta.
-- **Modalità allenamento** — una schermata per serie, con:
+- **Oggi** — è la schermata di apertura: scegli se fare la **Sessione A o la Sessione B** (quella
+  suggerita dall'alternanza è marcata “consigliata”, ma non è vincolante); ciclo, settimana e fase
+  correnti con RIR e tempo di esecuzione, avanzamento del ciclo e aderenza.
+- **Modalità allenamento** — si apre con il **riepilogo degli esercizi della sessione** (numerati,
+  con serie e ripetizioni), poi una schermata per serie, con:
+  - in testa, sempre visibile, **a che punto sei**: “Esercizio 3 di 11 · serie 2 di 3” con barra di
+    avanzamento;
   - spiegazione breve dell'esercizio sempre visibile, tecnica ed errori espandibili, nota ginocchia
     evidenziata;
   - **barra di avanzamento** della sessione, sempre in testa;
@@ -27,7 +29,6 @@ dati restano sul telefono (IndexedDB).
     dopo il secondo;
   - badge **DROP SET** sull'ultima serie degli esercizi ISO in fase di intensificazione;
   - pulsante **Sostituisci** per passare a un'alternativa, registrata come tale nello storico;
-  - riscaldamento e defaticamento come checklist;
   - **Annulla la sessione** con conferma in-app: elimina le serie registrate e riporta alla home;
   - Screen Wake Lock attivo e salvataggio a ogni input.
 
@@ -131,7 +132,7 @@ src/
   data/
     types.ts        tipi del dominio
     exercises.ts    libreria esercizi (scheda + alternative)
-    program.ts      sessioni A e B, riscaldamento, defaticamento, fasi
+    program.ts      sessioni A e B e fasi del ciclo
   lib/
     logic.ts        settimana, fase, serie, progressione, timer, statistiche
     logic.test.ts   test della logica
@@ -139,7 +140,7 @@ src/
     store.tsx       stato dell'app
     useTimer.ts     timer basato su timestamp, suono e vibrazione
   components/       componenti condivisi (vetro liquido, stepper, barra di avanzamento)
-  pages/            Home, Workout, Progress, History, Tips, Settings, Onboarding
+  pages/            Home, Workout, Progress, History, Tips, Settings
   styles/index.css  design system "liquid glass"
 ```
 

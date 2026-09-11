@@ -33,7 +33,6 @@ interface Step {
 function buildSteps(blocks: Block[], setsOf: (e: Exercise) => number): Step[] {
   const steps: Step[] = [];
   for (const block of blocks) {
-    if (block.type === 'warmup' || block.type === 'cooldown') continue;
     const rounds = Math.max(...block.exercises.map(setsOf));
     for (let setIndex = 0; setIndex < rounds; setIndex++) {
       block.exercises.forEach((exercise, exIndex) => {
@@ -79,8 +78,7 @@ export default function Workout() {
 
   const [log, setLog] = useState<WorkoutLog | null>(null);
   const [cursor, setCursor] = useState(0);
-  const [checklist, setChecklist] = useState<string[]>([]);
-  const [phaseView, setPhaseView] = useState<'warmup' | 'work' | 'cooldown' | 'summary'>('warmup');
+  const [phaseView, setPhaseView] = useState<'recap' | 'work' | 'summary'>('recap');
   const [expanded, setExpanded] = useState(false);
   const [substituting, setSubstituting] = useState(false);
   const [weight, setWeight] = useState(0);
@@ -99,6 +97,13 @@ export default function Workout() {
       isLastSetOfBlock: base[i + 1]?.block.id !== s.block.id,
     }));
   }, [session, setsOf, phase]);
+
+  /** Esercizi della sessione in ordine di esecuzione. */
+  const exerciseOrder = useMemo(() => {
+    const seen = new Map<string, { exercise: Exercise; block: Block }>();
+    for (const s of steps) if (!seen.has(s.exercise.id)) seen.set(s.exercise.id, { exercise: s.exercise, block: s.block });
+    return [...seen.values()];
+  }, [steps]);
 
   const { timer, start, stop, adjust } = useRestTimer(() => {
     vibrate(settings.vibration);
@@ -123,7 +128,6 @@ export default function Workout() {
       week: program.week,
       phaseId: phase.id,
       sets: [],
-      checklist: [],
       cursor: 0,
       status: 'inProgress',
     };
@@ -217,12 +221,6 @@ export default function Workout() {
     [putWorkout],
   );
 
-  const toggleCheck = (id: string) => {
-    const next = checklist.includes(id) ? checklist.filter((x) => x !== id) : [...checklist, id];
-    setChecklist(next);
-    persist({ checklist: next });
-  };
-
   const substitute = (altId: string) => {
     if (!log || !step) return;
     const sets = log.sets.map((s) =>
@@ -275,7 +273,7 @@ export default function Workout() {
     setCursor(nextCursor);
     persist({ sets, cursor: nextCursor });
     vibrate(settings.vibration, [40]);
-    if (nextCursor >= steps.length) setPhaseView('cooldown');
+    if (nextCursor >= steps.length) setPhaseView('summary');
   };
 
   const finish = async () => {
@@ -287,7 +285,6 @@ export default function Workout() {
       status: 'completed',
       kneePain,
       notes,
-      checklist,
       cursor: steps.length,
     };
     await putWorkout(done);
@@ -306,104 +303,87 @@ export default function Workout() {
   const totalSets = steps.length;
 
   /* ---------------------------------------------------------------- intestazione */
+  // Posizione nell'allenamento: quale esercizio, e a che serie di quell'esercizio.
+  const exerciseNumber = step
+    ? exerciseOrder.findIndex((e) => e.exercise.id === step.exercise.id) + 1
+    : exerciseOrder.length;
+
   const Header = (
     <header className="sticky top-0 z-30 -mx-4 mb-3 border-b border-white/40 bg-brand-500/85 px-4 pb-3 pt-safe backdrop-blur-xl">
       <div className="flex items-center justify-between gap-3">
-        <button className="btn-chip" onClick={() => navigate('/')} aria-label="Esci dall’allenamento e torna alla home">
+        <button
+          className="btn-chip"
+          onClick={() => navigate('/')}
+          aria-label="Esci dall’allenamento e torna alla home"
+        >
           ← Esci
         </button>
-        <p className="text-sm font-black">
-          Sessione {session.id} · Sett. {program.week} · {phase.name}
+        <p className="truncate text-sm font-black">
+          Sessione {session.id} · Sett. {program.week}
         </p>
-        <span className="text-sm font-bold tabular-nums text-ink/60">
-          {doneSets}/{totalSets}
-        </span>
       </div>
       <div className="mt-2">
-        <ProgressBar value={doneSets} max={totalSets} label="Avanzamento sessione" />
+        <ProgressBar
+          value={doneSets}
+          max={totalSets}
+          label={
+            phaseView === 'work' && step
+              ? `Esercizio ${exerciseNumber} di ${exerciseOrder.length} · serie ${step.setIndex + 1} di ${step.totalSets}`
+              : `${exerciseOrder.length} esercizi · ${totalSets} serie`
+          }
+        />
       </div>
     </header>
   );
 
-  /* ------------------------------------------------------------------ checklist */
-  const renderChecklist = (kind: 'warmup' | 'cooldown') => {
-    const block = session.blocks.find((b) => b.type === kind)!;
-    const style = BLOCK_STYLE[kind];
-    const allDone = block.exercises.every((e) => checklist.includes(e.id));
+  /* ------------------------------------------------------- riepilogo pre-sessione */
+  if (phaseView === 'recap') {
     return (
-      <div className="space-y-3 pb-8">
+      <div className="space-y-3 pb-10">
         {Header}
         <Card>
-          <span className={`pill ${style.chip}`}>{style.label}</span>
-          <h1 className="mt-2 text-2xl font-black">
-            {kind === 'warmup' ? 'Prepara il corpo' : 'Chiudi la sessione'}
+          <p className="section-title">Oggi ti aspettano</p>
+          <h1 className="mt-1 text-3xl font-black leading-none">
+            {exerciseOrder.length} esercizi
           </h1>
-          <p className="mt-1 text-sm text-ink/70">
-            {kind === 'warmup'
-              ? 'Circa 10 minuti. Spunta ogni voce quando l’hai fatta: apre spalle e dorso e ti evita infortuni.'
-              : 'Circa 6 minuti di stretching e respirazione. Poi registri la sessione.'}
+          <p className="mt-2 text-sm font-semibold text-ink/70">
+            {totalSets} serie in totale · {session.estimatedMinutes}′ circa · Fase {phase.name}
           </p>
-          <div className="mt-4">
-            <ProgressBar
-              value={block.exercises.filter((e) => checklist.includes(e.id)).length}
-              max={block.exercises.length}
-              label="Completate"
-              fillClass={style.bar}
-            />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <Pill tone="ink">RIR multi {phase.rirMulti}</Pill>
+            <Pill>RIR iso {phase.rirIso}</Pill>
+            <Pill>Tempo {phase.tempo.multi}</Pill>
+            {phase.dropSetOnLastIsoSet && <Pill tone="warn">Drop set ISO</Pill>}
           </div>
         </Card>
 
-        <ul className="space-y-2">
-          {block.exercises.map((e) => {
-            const on = checklist.includes(e.id);
-            return (
-              <li key={e.id}>
-                <button
-                  className={`glass w-full p-4 text-left transition ${on ? 'solid !bg-ink !text-white' : ''}`}
-                  onClick={() => toggleCheck(e.id)}
-                  aria-pressed={on}
-                >
-                  <div className="flex items-start gap-3">
-                    <span
-                      aria-hidden
-                      className={`mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 text-sm font-black ${
-                        on ? 'border-brand-400 bg-brand-400 text-ink' : 'border-ink/30'
-                      }`}
-                    >
-                      {on ? '✓' : ''}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="font-bold leading-snug">{e.name}</p>
-                      <p className={`text-sm font-semibold ${on ? 'text-brand-400' : 'text-ink/60'}`}>
-                        {e.dosage}
-                      </p>
-                      <p className={`mt-1 text-sm ${on ? 'text-white/70' : 'text-ink/65'}`}>
-                        {e.summary}
-                      </p>
-                    </div>
-                  </div>
-                </button>
+        <Card className="!p-0">
+          <ol className="divide-y divide-ink/8">
+            {exerciseOrder.map(({ exercise, block }, i) => (
+              <li key={exercise.id} className="flex items-start gap-3 p-4">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-2xl bg-ink text-sm font-black text-brand-400">
+                  {i + 1}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="font-bold leading-snug">{exercise.name}</p>
+                  <p className="text-xs font-semibold text-ink/55">
+                    {block.label} · {exercise.muscles.join(' · ')}
+                  </p>
+                </div>
+                <span className="shrink-0 pt-0.5 text-sm font-black tabular-nums text-ink/70">
+                  {setsOf(exercise)} × {rangeLabel(exercise)}
+                </span>
               </li>
-            );
-          })}
-        </ul>
+            ))}
+          </ol>
+        </Card>
 
-        <button
-          className="btn-primary w-full"
-          onClick={() => (kind === 'warmup' ? setPhaseView('work') : setPhaseView('summary'))}
-        >
-          {kind === 'warmup'
-            ? allDone
-              ? 'Vai al primo esercizio'
-              : 'Salta al primo esercizio'
-            : 'Registra la sessione'}
+        <button className="btn-primary w-full text-lg" onClick={() => setPhaseView('work')}>
+          ▶︎ Inizia dal primo esercizio
         </button>
       </div>
     );
-  };
-
-  if (phaseView === 'warmup') return renderChecklist('warmup');
-  if (phaseView === 'cooldown') return renderChecklist('cooldown');
+  }
 
   /* -------------------------------------------------------------------- riepilogo */
   if (phaseView === 'summary') {
@@ -478,8 +458,8 @@ export default function Workout() {
         {Header}
         <Card>
           <p className="font-bold">Hai completato tutte le serie.</p>
-          <button className="btn-primary mt-4 w-full" onClick={() => setPhaseView('cooldown')}>
-            Vai al defaticamento
+          <button className="btn-primary mt-4 w-full" onClick={() => setPhaseView('summary')}>
+            Chiudi e registra la sessione
           </button>
         </Card>
       </div>
@@ -731,8 +711,8 @@ export default function Workout() {
         </Card>
       )}
 
-      <button className="btn-ghost w-full" onClick={() => setPhaseView('cooldown')}>
-        Vai al defaticamento
+      <button className="btn-ghost w-full" onClick={() => setPhaseView('summary')}>
+        Chiudi e registra la sessione
       </button>
       {confirmingCancel ? (
         <Card className="solid !bg-red-50">

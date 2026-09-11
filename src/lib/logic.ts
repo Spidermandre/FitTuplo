@@ -4,7 +4,7 @@ import {
   phasesFirstCycle,
   phasesNextCycles,
 } from '../data/program';
-import type { Exercise, Phase, SetLog, Settings, WorkoutLog } from '../data/types';
+import type { BlockType, Exercise, Phase, SetLog, Settings, WorkoutLog } from '../data/types';
 
 /* -------------------------------------------------------------- settimana e fase */
 
@@ -235,7 +235,7 @@ export type TimerStep =
  * recupero parte solo dopo il secondo.
  */
 export function timerAfterSet(params: {
-  blockType: 'warmup' | 'main' | 'superset' | 'core' | 'cooldown';
+  blockType: BlockType;
   exerciseIndexInBlock: number;
   exercisesInBlock: number;
   isLastSetOfBlock: boolean;
